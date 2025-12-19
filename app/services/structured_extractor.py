@@ -30,12 +30,23 @@ def _handle_validation_error(
                 "document_type": document_type,
                 "validation_errors": validation_error.errors(),
                 "json_keys": list(json_data.keys()) if json_data else None,
+                "json_data": json_data,
             },
         },
     )
+    
+    document_names = {
+        "articles_of_association": "Contrato Social",
+        "cnpj_card": "Cartão CNPJ",
+        "tax_clearance_certificate": "Certidão Negativa de Débitos Federais",
+    }
+    
+    document_name = document_names.get(document_type, document_type)
+    
     raise DocumentValidationError(
-        f"Failed to validate {document_type} data from LLM response. "
-        f"Errors: {validation_error.errors()}"
+        f"Não foi possível processar o documento {document_name}. "
+        f"O documento pode estar incompleto, ilegível ou em formato não suportado. "
+        f"Por favor, verifique se o arquivo está correto e tente novamente."
     ) from validation_error
 
 

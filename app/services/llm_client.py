@@ -47,14 +47,16 @@ async def call_llm(messages: List[Dict[str, str]]) -> Dict[str, Any]:
                 },
             )
             raise LLMTimeoutError(
-                f"LLM request timed out after {settings.llm_timeout_seconds} seconds"
+                "O serviço de processamento de documentos demorou muito para responder. Tente novamente."
             ) from exc
         except httpx.HTTPError as exc:
             logger.error(
                 "LLM HTTP error",
                 extra={"data": {"error": str(exc), "model": settings.openrouter_model}},
             )
-            raise LLMClientError(f"HTTP error calling LLM: {exc}") from exc
+            raise LLMClientError(
+                "Erro ao comunicar com o serviço de processamento. Tente novamente mais tarde."
+            ) from exc
 
         if response.status_code >= 400:
             error_detail = response.text[:500] if response.text else "No error details"
@@ -69,7 +71,7 @@ async def call_llm(messages: List[Dict[str, str]]) -> Dict[str, Any]:
                 },
             )
             raise LLMClientError(
-                f"LLM API returned error {response.status_code}: {error_detail}"
+                "Erro no serviço de processamento de documentos. Tente novamente mais tarde."
             )
         
         try:
@@ -84,24 +86,34 @@ async def call_llm(messages: List[Dict[str, str]]) -> Dict[str, Any]:
                     },
                 },
             )
-            raise LLMClientError(f"Invalid JSON response from LLM: {exc}") from exc
+            raise LLMClientError(
+                "Resposta inválida do serviço de processamento. Tente novamente."
+            ) from exc
 
 
 def parse_llm_json_response(response: Dict[str, Any]) -> Dict[str, Any]:
     try:
         if "choices" not in response or not response["choices"]:
-            raise LLMResponseError("LLM response missing 'choices' field")
+            raise LLMResponseError(
+                "Resposta inválida do serviço de processamento. Tente novamente."
+            )
         
         if "message" not in response["choices"][0]:
-            raise LLMResponseError("LLM response missing 'message' field")
+            raise LLMResponseError(
+                "Resposta inválida do serviço de processamento. Tente novamente."
+            )
         
         if "content" not in response["choices"][0]["message"]:
-            raise LLMResponseError("LLM response missing 'content' field")
+            raise LLMResponseError(
+                "Resposta inválida do serviço de processamento. Tente novamente."
+            )
         
         content = response["choices"][0]["message"]["content"]
         
         if not content or not content.strip():
-            raise LLMResponseError("LLM response content is empty")
+            raise LLMResponseError(
+                "Resposta vazia do serviço de processamento. Tente novamente."
+            )
         
         return json.loads(content)
     except json.JSONDecodeError as exc:
@@ -113,13 +125,17 @@ def parse_llm_json_response(response: Dict[str, Any]) -> Dict[str, Any]:
                 },
             },
         )
-        raise LLMJSONParseError(f"Failed to parse LLM JSON content: {exc}") from exc
+        raise LLMJSONParseError(
+            "Não foi possível processar a resposta do serviço. Tente novamente."
+        ) from exc
     except KeyError as exc:
         logger.error(
             "LLM response structure error",
             extra={"data": {"missing_key": str(exc), "response_keys": list(response.keys())}},
         )
-        raise LLMResponseError(f"Unexpected LLM response structure: missing {exc}") from exc
+        raise LLMResponseError(
+            "Estrutura de resposta inválida do serviço. Tente novamente."
+        ) from exc
 
 
 async def call_llm_and_parse(content: str) -> Dict[str, Any]:

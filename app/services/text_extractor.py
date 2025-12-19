@@ -22,7 +22,10 @@ async def extract_text_from_pdf(file: UploadFile) -> str:
             "PDF extraction failed",
             extra={"data": {"filename": file.filename, "pages": len(reader.pages)}},
         )
-        raise PDFExtractionError("Could not extract any text from PDF")
+        raise PDFExtractionError(
+            "Não foi possível extrair texto do PDF. Verifique se o arquivo está válido, "
+            "não está corrompido e contém texto legível."
+        )
 
     return full_text
 

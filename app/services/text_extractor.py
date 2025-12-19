@@ -9,8 +9,9 @@ logger = get_logger(__name__)
 
 def validate_pdf_file(file: UploadFile) -> None:
     if not file.filename.lower().endswith('.pdf'):
+        filename_info = f" '{file.filename}'" if file.filename else ""
         raise InvalidFileTypeError(
-            "O arquivo não é um PDF. Por favor, envie apenas arquivos PDF."
+            f"O arquivo{filename_info} não é um PDF. Por favor, envie apenas arquivos PDF."
         )
 
 
@@ -27,13 +28,14 @@ async def extract_text_from_pdf(file: UploadFile) -> str:
 
     full_text = "\n\n".join(texts).strip()
     if not full_text:
+        filename_info = f" '{file.filename}'" if file.filename else ""
         logger.error(
             "PDF extraction failed",
             extra={"data": {"filename": file.filename, "pages": len(reader.pages)}},
         )
         raise PDFExtractionError(
-            "Não foi possível extrair texto do PDF. Verifique se o arquivo está válido, "
-            "não está corrompido e contém texto legível."
+            f"Não foi possível extrair texto do PDF{filename_info}. "
+            f"Verifique se o arquivo está válido, não está corrompido e contém texto legível."
         )
 
     return full_text

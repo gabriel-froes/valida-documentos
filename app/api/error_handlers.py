@@ -24,7 +24,7 @@ async def llm_timeout_error_handler(request: Request, exc: LLMTimeoutError) -> J
     return JSONResponse(
         status_code=status.HTTP_504_GATEWAY_TIMEOUT,
         content={
-            "error": "LLM service timeout",
+            "error": "Timeout do serviço de processamento",
             "message": str(exc),
         },
     )
@@ -38,7 +38,7 @@ async def llm_client_error_handler(request: Request, exc: LLMClientError) -> JSO
     return JSONResponse(
         status_code=status.HTTP_502_BAD_GATEWAY,
         content={
-            "error": "LLM service error",
+            "error": "Erro no serviço de processamento",
             "message": str(exc),
         },
     )
@@ -52,7 +52,7 @@ async def llm_json_parse_error_handler(request: Request, exc: LLMJSONParseError)
     return JSONResponse(
         status_code=status.HTTP_502_BAD_GATEWAY,
         content={
-            "error": "LLM response parsing error",
+            "error": "Erro ao processar resposta do serviço",
             "message": str(exc),
         },
     )
@@ -66,7 +66,7 @@ async def llm_response_error_handler(request: Request, exc: LLMResponseError) ->
     return JSONResponse(
         status_code=status.HTTP_502_BAD_GATEWAY,
         content={
-            "error": "LLM response structure error",
+            "error": "Erro na estrutura da resposta do serviço",
             "message": str(exc),
         },
     )
@@ -82,7 +82,7 @@ async def invalid_file_type_error_handler(
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
-            "error": "Invalid file type",
+            "error": "Tipo de arquivo inválido",
             "message": str(exc),
         },
     )
@@ -96,7 +96,7 @@ async def pdf_extraction_error_handler(request: Request, exc: PDFExtractionError
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
-            "error": "PDF extraction failed",
+            "error": "Falha na extração do PDF",
             "message": str(exc),
         },
     )
@@ -115,7 +115,7 @@ async def validation_error_handler(request: Request, exc: ValidationError) -> JS
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
-            "error": "Validation error",
+            "error": "Erro de validação",
             "message": "Dados inválidos recebidos. Por favor, verifique os documentos enviados e tente novamente.",
         },
     )
@@ -131,7 +131,7 @@ async def document_validation_error_handler(
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
-            "error": "Document validation error",
+            "error": "Erro na validação do documento",
             "message": str(exc),
         },
     )
@@ -145,7 +145,7 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
-            "error": "Internal server error",
+            "error": "Erro interno do servidor",
             "message": "Ocorreu um erro inesperado. Tente novamente mais tarde.",
         },
     )

@@ -1,13 +1,22 @@
 from fastapi import UploadFile
 from pypdf import PdfReader
 
-from app.core.exceptions import PDFExtractionError
+from app.core.exceptions import InvalidFileTypeError, PDFExtractionError
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
 
+def validate_pdf_file(file: UploadFile) -> None:
+    if not file.filename.lower().endswith('.pdf'):
+        raise InvalidFileTypeError(
+            "O arquivo não é um PDF. Por favor, envie apenas arquivos PDF."
+        )
+
+
 async def extract_text_from_pdf(file: UploadFile) -> str:
+    validate_pdf_file(file)
+    
     reader = PdfReader(file.file)
 
     texts: list[str] = []

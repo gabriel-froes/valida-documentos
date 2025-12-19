@@ -26,3 +26,8 @@ class LLMResponseError(LLMClientError):
 class DocumentValidationError(Exception):
     """Raised when document validation fails."""
     pass
+
+
+class InvalidFileTypeError(Exception):
+    """Raised when an invalid file type is uploaded."""
+    pass

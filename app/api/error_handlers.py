@@ -4,6 +4,7 @@ from pydantic import ValidationError
 
 from app.core.exceptions import (
     DocumentValidationError,
+    InvalidFileTypeError,
     LLMClientError,
     LLMJSONParseError,
     LLMResponseError,
@@ -66,6 +67,22 @@ async def llm_response_error_handler(request: Request, exc: LLMResponseError) ->
         status_code=status.HTTP_502_BAD_GATEWAY,
         content={
             "error": "LLM response structure error",
+            "message": str(exc),
+        },
+    )
+
+
+async def invalid_file_type_error_handler(
+    request: Request, exc: InvalidFileTypeError
+) -> JSONResponse:
+    logger.error(
+        "Invalid file type in request",
+        extra={"data": {"path": request.url.path, "error": str(exc)}},
+    )
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "error": "Invalid file type",
             "message": str(exc),
         },
     )

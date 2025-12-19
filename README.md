@@ -1,6 +1,6 @@
 # Validador de Documentos Empresariais
 
-Sistema de validação automatizada de documentos empresariais brasileiros (Contrato Social, Cartão CNPJ e Certidão Negativa de Débitos Federais) utilizando LLM para extração estruturada de dados e validação de consistência entre documentos.
+Sistema de validação automatizada de documentos empresariais brasileiros (Contrato Social, Cartão CNPJ e Certidão Negativa de Débitos Federais) utilizando LLM para extração estruturada de dados e validação semântica de objeto social, combinado com validações determinísticas para garantir consistência entre documentos.
 
 ## 📁 Estrutura do Projeto
 
@@ -71,13 +71,22 @@ O sistema segue um fluxo bem definido em 4 etapas principais:
 
 ## 🏗️ Decisões de Arquitetura
 
-### Por que LLM apenas para Extração?
+### Uso do LLM: Extração e Validação Semântica
 
-A decisão de usar LLM **principalmente para extração** e não para validação foi tomada por várias razões:
+O LLM é utilizado em **duas etapas distintas** do processo:
+
+1. **Extração Estruturada**: O LLM extrai dados estruturados dos documentos PDFs, convertendo texto não estruturado em JSON validado
+2. **Validação Semântica de Objeto Social**: O LLM realiza análise semântica para verificar se as atividades CNAE estão contempladas no objeto social
+
+### Por que Validações Determinísticas para a Maioria dos Campos?
+
+A decisão de usar validações determinísticas em código para a maioria dos campos foi tomada por várias razões:
 
 1. **Confiabilidade**: Validações determinísticas são mais confiáveis e previsíveis
-2. **Rastreabilidade**: Validações em código são mais fáceis de debugar e auditar
-3. **Manutenibilidade**: Regras de negócio em código são mais fáceis de manter e evoluir
+2. **Performance**: Validações em código são muito mais rápidas que chamadas a LLM
+3. **Custo**: Reduzir chamadas a LLM diminui custos operacionais
+4. **Rastreabilidade**: Validações em código são mais fáceis de debugar e auditar
+5. **Manutenibilidade**: Regras de negócio em código são mais fáceis de manter e evoluir
 
 ### Por que LLM para Validação de Objeto Social?
 
@@ -172,16 +181,48 @@ Valida três documentos empresariais:
 - Certidão Negativa de Débitos Federais (PDF)
 
 **Resposta:**
+
+Exemplo com inconsistências:
 ```json
 {
-  "status": "APROVADO" | "REPROVADO",
+  "status": "REPROVADO",
   "inconsistencies": [
     {
       "field": "cnpj",
-      "message": "CNPJ do cartão não confere com o da certidão",
-      "severity": "CRITICA" | "AVISO"
+      "message": "CNPJ divergente entre documentos.",
+      "severity": "CRITICA",
+      "values": {
+        "cartao_cnpj": "12345678000190",
+        "certidao_negativa": "12345678000199"
+      }
+    },
+    {
+      "field": "razao_social",
+      "message": "Razão social não confere entre contrato social e cartão CNPJ.",
+      "severity": "CRITICA",
+      "values": {
+        "contrato_social": "empresa exemplo limitada",
+        "cartao_cnpj": "empresa exemplo ltda"
+      }
+    },
+    {
+      "field": "certidao_validade",
+      "message": "Certidão negativa expirada.",
+      "severity": "CRITICA",
+      "values": {
+        "data_validade": "2024-12-01",
+        "data_atual": "2025-01-15"
+      }
     }
   ]
+}
+```
+
+Exemplo sem inconsistências:
+```json
+{
+  "status": "APROVADO",
+  "inconsistencies": []
 }
 ```
 
@@ -208,7 +249,7 @@ Valida três documentos empresariais:
 
 ## 🧪 Testes
 
-O projeto utiliza pytest para testes. Para executar:
+TODO
 
 ```bash
 pytest

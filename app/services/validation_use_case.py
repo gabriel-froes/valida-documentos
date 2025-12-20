@@ -46,7 +46,6 @@ async def validate_supplier_documents_use_case(
         certificate=certificate_data,
     )
 
-    # Log apenas o essencial: status e resumo das inconsistências
     total_inconsistencies = len(result.inconsistencies)
     critical_count = sum(1 for inc in result.inconsistencies if inc.severity == "CRITICA")
     warning_count = total_inconsistencies - critical_count

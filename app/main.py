@@ -27,7 +27,6 @@ from app.core.logging import setup_logging
 setup_logging()
 app = FastAPI(title='Validador de Contratos', version='1.0.0')
 
-# Register exception handlers (order matters - most specific first)
 app.add_exception_handler(LLMTimeoutError, llm_timeout_error_handler)
 app.add_exception_handler(LLMJSONParseError, llm_json_parse_error_handler)
 app.add_exception_handler(LLMResponseError, llm_response_error_handler)

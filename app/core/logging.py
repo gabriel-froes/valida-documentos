@@ -23,6 +23,27 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(log, ensure_ascii=False, default=str)
 
 
+class ConsoleFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        timestamp = self.formatTime(record, self.datefmt)
+        level = record.levelname
+        logger_name = record.name
+        message = record.getMessage()
+        
+        log_dict: dict[str, Any] = {
+            "timestamp": timestamp,
+            "level": level,
+            "logger": logger_name,
+            "message": message,
+        }
+        
+        data = getattr(record, "data", None)
+        if data is not None:
+            log_dict["data"] = data
+        
+        return json.dumps(log_dict, ensure_ascii=False, indent=2, default=str)
+
+
 def setup_logging() -> None:
     os.makedirs(settings.log_dir, exist_ok=True)
     dict_config: Mapping[str, Any] = {
@@ -32,6 +53,10 @@ def setup_logging() -> None:
             "json": {
                 "()": JsonFormatter,
                 "datefmt": "%Y-%m-%dT%H:%M:%S",
+            },
+            "console": {
+                "()": ConsoleFormatter,
+                "datefmt": "%Y-%m-%d %H:%M:%S",
             },
         },
         "handlers": {
@@ -43,10 +68,14 @@ def setup_logging() -> None:
                 "backupCount": 5,
                 "encoding": "utf-8",
             },
+            "console": {
+                "class": "logging.StreamHandler",
+                "formatter": "console",
+            },
         },
         "root": {
             "level": settings.log_level,
-            "handlers": ["file"],
+            "handlers": ["file", "console"],
         },
     }
 
